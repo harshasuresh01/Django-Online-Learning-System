@@ -1,0 +1,11 @@
+<div class="comment-list">
+    {% for comment in comments %}
+        <div class="comment">
+            <p>{{ comment.content }}</p>
+            <p>Posted by: {{ comment.author.username }}</p>
+            <p>Posted at: {{ comment.created_at }}</p>
+        </div>
+    {% empty %}
+        <p>No comments yet.</p>
+    {% endfor %}
+</div>

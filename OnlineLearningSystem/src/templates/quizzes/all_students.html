@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>All Students</h2>
+  <ul>
+    {% for student in students %}
+      <li>
+        <a href="{% url 'quizzes:student_detail' student.id %}">{{ student.username }}</a>
+      </li>
+    {% empty %}
+      <p>No students found.</p>
+    {% endfor %}
+  </ul>
+{% endblock %}

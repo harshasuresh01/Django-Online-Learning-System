@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <!-- <h2>Available Quizzes</h2> -->
+
+  {% if request.user.is_teacher %}
+    <a href="{% url 'quizzes:all_students' %}">View All Students</a>
+
+    <h3>Set Quiz Weight</h3>
+    <form method="post" action="{% url 'quizzes:set_quiz_weight' %}">
+      {% csrf_token %}
+      <select name="quiz_id">
+        {% for quiz in quizzes %}
+          <option value="{{ quiz.id }}">{{ quiz.title }}</option>
+        {% endfor %}
+      </select>
+      <input type="number" name="weight" min="0" step="0.1" placeholder="Weight">
+      <button type="submit">Set Weight</button>
+    </form>
+
+    <!-- Pie chart for teachers -->
+    <div style="width: 100px; height: 100px;">
+        <canvas id="gradeDistributionChart"></canvas>
+    </div>
+    
+    <script>
+        var ctx = document.getElementById('gradeDistributionChart').getContext('2d');
+        var gradeData = {{ letter_grade_distribution.1|safe }};
+        var gradeLabels = {{ letter_grade_distribution.0|safe }};
+        console.log("Grade Data:", gradeData);  // Debugging in browser console
+        console.log("Grade Labels:", gradeLabels);  // Debugging in browser console
+
+        var gradeDistributionChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: gradeLabels,
+                datasets: [{
+                    data: gradeData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)',
+                        'rgba(255, 159, 64, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+
+    <!-- List of quizzes for teachers -->
+    <ul>
+      {% for quiz in quizzes %}
+        <li>
+          <a href="{% url 'quizzes:quiz_detail' quiz.title %}">{{ quiz.title }}</a>
+          - Weight: {{ quiz.weight }}
+        </li>
+      {% endfor %}
+    </ul>
+
+  {% else %}
+    <!-- Display weighted score and letter grade for students -->
+    <div>
+      <h3>Your Performance</h3>
+      <p>Weighted Score: {{ weighted_score|default:"N/A" }}%</p>
+      <p>Letter Grade: {{ letter_grade|default:"N/A" }}</p>
+    </div>
+
+    <div style="display: flex; justify-content: space-between;">
+      <div style="flex: 1; margin-right: 20px;">
+        <form method="get" action="{% url 'quizzes:quiz_list' %}">
+            <input type="text" name="q" placeholder="Search quizzes...">
+            <button type="submit">Search</button>
+        </form>
+
+        <ul>
+          {% for quiz, attempt in quizzes_with_attempts %}
+            <li>
+              <a href="{% url 'quizzes:quiz_detail' quiz.title %}">{{ quiz.title }}</a>
+              - Weight: {{ quiz.weight }}
+              {% if attempt %}
+                - Score: {{ attempt.score }}/{{ quiz.questions.count }} (Taken {{ attempt.date_attempted|date:"M d, Y" }})
+              {% else %}
+                - Not taken
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div style="flex: 1;">
+        <canvas id="scoreChart" style="width: 400px; height: 300px;"></canvas>
+      </div>
+    </div>
+
+    <script id="chart-data" type="application/json">{{ subject_values|safe }}</script>
+    <script id="chart-labels" type="application/json">{{ subject_labels|safe }}</script>
+
+    <script>
+        var ctx = document.getElementById('scoreChart').getContext('2d');
+        var chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        var chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
+
+        var scoreChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Your Scores',
+                    data: chartData,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+  {% endif %}
+{% endblock %}

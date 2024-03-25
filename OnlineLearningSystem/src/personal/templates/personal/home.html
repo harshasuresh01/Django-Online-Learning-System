@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style type="text/css">
+
+	@media (max-width: 768px) { 
+		.right-column{
+			margin-left: 0px;
+		}
+	}
+
+	@media (min-width: 768px) { 
+		.right-column{
+			margin-left: 20px;
+		}
+	}
+
+	.blog-post-container{
+		margin-bottom: 20px;
+		width: 100%;
+	}
+	.create-post-bar{
+		background-color: #fff;
+		margin-bottom:20px;
+	}
+
+	.left-column{
+		padding:0px;
+	}
+
+	.right-column{
+		padding:0px;
+	}
+	.lead{
+		font-size: 17px;
+	}
+</style>
+<div class="container">
+	<div class="row">
+
+
+		<div class="left-column col-lg-7 offset-lg-1">
+
+
+			<div class="d-lg-none mb-3">
+				<div class="card m-auto d-flex flex-column p-3">
+					<p class="lead">Create posts in this online learning system!!</p>
+					<p class="m-auto"><a class="btn btn-primary" href="{% url 'blog:create' %}">Create post</a></p>
+				</div>
+			</div>
+
+			{% if blog_posts %}
+				{% for post in blog_posts %}
+					<div class="blog-post-container">
+						{% include 'blog/snippets/blog_post_snippet.html' with blog_post=post %}
+					</div>
+				{% endfor %}
+			{% else %}
+				<div class="blog-post-container">
+					{% include 'blog/snippets/blog_post_snippet.html' with query=query %}
+				</div>
+			{% endif %}
+
+		</div>
+
+		<div class="right-column col-lg-3 d-lg-flex d-none flex-column">
+
+			<div class="card create-post-bar d-flex flex-column p-3">
+				<p class="lead">Create posts in this online learning system!!</p>
+				<p class="m-auto"><a class="btn btn-primary" href="{% url 'blog:create' %}">Create post</a></p>
+			</div>
+		
+		</div>
+
+	</div>
+</div>
+
+{% endblock content %}

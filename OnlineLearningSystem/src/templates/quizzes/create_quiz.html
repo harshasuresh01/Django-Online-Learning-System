@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Create a New Quiz</h2>
+<form method="post" id="quizForm">
+    {% csrf_token %}
+    {{ quiz_form.as_p }}
+
+    <div id="questions-container">
+        <!-- Placeholder for questions -->
+    </div>
+
+    <button type="button" id="add-question">Add Question</button>
+    <button type="submit">Create Quiz</button>
+</form>
+
+<script>
+// JavaScript to handle adding new question forms
+document.addEventListener('DOMContentLoaded', function() {
+    var questionIndex = 0;
+    document.querySelector('#add-question').addEventListener('click', function() {
+        var newQuestionHtml = `
+            <div class="question">
+                <label>Question: <input type="text" name="questions-${questionIndex}-text"></label>
+                <div class="choices">
+                    <label>Choice 1: <input type="text" name="questions-${questionIndex}-choice-0"></label>
+                    <label>Choice 2: <input type="text" name="questions-${questionIndex}-choice-1"></label>
+                    <label>Choice 3: <input type="text" name="questions-${questionIndex}-choice-2"></label>
+                    <label>Choice 4: <input type="text" name="questions-${questionIndex}-choice-3"></label>
+                </div>
+                <label>Correct Answer (1-4): <input type="number" name="questions-${questionIndex}-correct" min="1" max="4"></label>
+            </div>
+        `;
+        document.querySelector('#questions-container').insertAdjacentHTML('beforeend', newQuestionHtml);
+        questionIndex++;
+    });
+});
+</script>
+
+{% endblock %}

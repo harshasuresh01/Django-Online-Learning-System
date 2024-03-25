@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <style>
+    .padded-cell {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    #chartContainer {
+      float: right;
+      margin-left: 20px;
+      margin-top: 150px; /* Adjust the top margin to move the chart higher up */
+    }
+  </style>
+
+  <div id="chartContainer">
+    <!-- Pie Chart for Grade Distribution -->
+    <canvas id="gradeDistributionChart" width="400" height="300"></canvas>
+  </div>
+
+  <h1>{{ quiz.title }}</h1>
+  <h2>Student Attempts</h2>
+
+  <!-- Statistics -->
+  <p>Highest Score: {{ highest_score }}</p>
+  <p>Lowest Score: {{ lowest_score }}</p>
+  <!-- <p>Average Score: {{ average_score }}</p> -->
+  <p>Average Score: {{ average_score|floatformat:2 }}%</p>
+
+  <!-- Sorting Links -->
+  <p>
+    Sort by: 
+    <a href="?sort=score&order=asc">Score Ascending</a> |
+    <a href="?sort=score&order=desc">Score Descending</a> |
+    <a href="?sort=date_attempted&order=asc">Date Ascending</a> |
+    <a href="?sort=date_attempted&order=desc">Date Descending</a>
+  </p>
+
+  <table>
+    <tr>
+      <th style="text-align: center;">Student</th>
+      <th class="padded-cell" style="text-align: center;">Score</th>
+      <th class="padded-cell" style="text-align: center;">Percentile Among All Students</th>
+      <th style="text-align: center;">Attempt Date</th>
+    </tr>
+    {% for attempt in student_attempts %}
+      <tr>
+        <td style="text-align: center;">{{ attempt.student.username }}</td>
+        <td class="padded-cell" style="text-align: center;">{{ attempt.score }}/{{ quiz.questions.count }}</td>
+        <td class="padded-cell" style="text-align: center;">{{ attempt.percentile }}%</td>
+        <td style="text-align: center;">{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4" style="text-align: center;">No attempts yet.</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{% url 'quizzes:quiz_list' %}">Back to Quizzes</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var gradeLabels = JSON.parse('{{ letter_grade_labels|safe }}');
+  var gradeCounts = JSON.parse('{{ letter_grade_counts|safe }}');
+
+  var ctx = document.getElementById('gradeDistributionChart').getContext('2d');
+  var gradeDistributionChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+          labels: gradeLabels,
+          datasets: [{
+              data: gradeCounts,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+              borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
+          }]
+      },
+      options: {
+          responsive: false,
+          // other options
+      }
+  });
+</script>
+
+{% endblock %}

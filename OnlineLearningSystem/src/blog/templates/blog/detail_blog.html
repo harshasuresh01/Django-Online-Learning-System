@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style type="text/css">
+    .container {
+        padding: 20px;
+    }
+
+    .comment-list, .comment-form {
+        text-align: center;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .comment {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px auto;
+        width: 80%;
+    }
+
+    .comment p {
+        margin: 0;
+    }
+
+    form.comment-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    form.comment-form input, form.comment-form textarea, form.comment-form button {
+        width: 90%;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container text-center">
+    <div class="row">
+        <div class="card m-auto">
+            {% if blog_post.image %}
+                <img class="card-img-top" src="{{ blog_post.image.url }}" alt="{{ blog_post.title }}">
+            {% endif %}
+            <div class="card-body my-2">
+                <h2 class="card-title">{{ blog_post.title }}</h2>
+                <p class="card-text">{{ blog_post.body|linebreaks }}</p>
+                <!-- Display Tags -->
+                {% if blog_post.tags %}
+                    <p><strong>Tags:</strong> {{ blog_post.tags }}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer text-muted">
+                Updated on {{ blog_post.date_updated }} by {{ blog_post.author.username }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="comment-list">
+    <h3>Comments:</h3>
+    {% for comment in blog_post.comments.all %}
+        <div class="comment">
+            <p>{{ comment.content|linebreaks }}</p>
+            <p>Posted by: {{ comment.author.username }} on {{ comment.created_at }}</p>
+        </div>
+    {% empty %}
+        <p>No comments yet.</p>
+    {% endfor %}
+</div>
+
+<div class="comment-form">
+    <h3>Add a Comment</h3>
+    <form method="post" class="comment-form">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit Comment</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Quiz Attempts for {{ student.username }}</h2>
+
+  <p>Highest Score: {{ highest_score }}%</p>
+  <p>Lowest Score: {{ lowest_score }}%</p>
+  <p>Average Score: {{ average_score }}%</p>
+  <p>Weighted Score: {{ weighted_score }}%</p>  <!-- Corrected -->
+  <p>Letter Grade: {{ letter_grade }}</p>       <!-- Corrected -->
+
+  <!-- Sorting Links -->
+  <a href="?sort=percentage_score&order=asc">Sort by Score Ascending</a> |
+  <a href="?sort=percentage_score&order=desc">Sort by Score Descending</a>
+
+  <!-- Attempts Table -->
+  <style>
+    .centered {
+      text-align: center;
+    }
+  </style>
+  <table>
+    <tr>
+      <th class="centered">Quiz</th>
+      <th class="centered">Score (%)</th>
+      <th class="centered">Date Attempted</th>
+    </tr>
+    {% for attempt in attempts %}
+      <tr>
+        <td class="centered">{{ attempt.quiz.title }}</td>
+        <td class="centered">{{ attempt.percentage_score }}%</td>
+        <td class="centered">{{ attempt.date_attempted }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <a href="{% url 'quizzes:all_students' %}">Back to All Students</a>
+{% endblock %}

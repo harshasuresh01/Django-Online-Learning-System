@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block content %}
+  <h1>{{ quiz.title }}</h1>
+
+  {% if remaining_attempts > 0 %}
+    {% if not latest_attempt %}
+      <p>You have {{ remaining_attempts }} attempts remaining out of {{ max_attempts }}.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for question in quiz.questions.all %}
+          <div class="question">
+            <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+            {% for choice in question.choices.all %}
+              <label>
+                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}">
+                {{ choice.text }}
+              </label><br>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <input type="submit" value="Submit Quiz">
+      </form>
+    {% else %}
+      <p>Your score: {{ latest_attempt.score }}/{{ quiz.questions.count }}</p>
+      <p>Your Percentile Among All Students: {{ latest_attempt_percentile }}%</p>
+      <ul>
+        {% for question in quiz.questions.all %}
+          <li>
+            <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+            Your answer: {{ latest_attempt|get_student_choice:question }}<br>
+          </li>
+        {% endfor %}
+      </ul>
+      <form method="post">
+        {% csrf_token %}
+        <input type="submit" name="retake_quiz" value="Retake Quiz">
+      </form>
+    {% endif %}
+  {% else %}
+    <p>All attempts are over</p>
+    {% if latest_attempt %}
+      <p>Your score: {{ latest_attempt.score }}/{{ quiz.questions.count }}</p>
+      <p>Your Percentile Among All Students: {{ latest_attempt_percentile }}%</p>
+    {% endif %}
+  {% endif %}
+  <a href="{% url 'quizzes:quiz_list' %}">Back to Quizzes</a>
+{% endblock %}

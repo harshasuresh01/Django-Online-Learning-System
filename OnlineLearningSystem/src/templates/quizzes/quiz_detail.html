@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block content %}
+  <h1>{{ quiz.title }}</h1>
+
+  {% if is_teacher %}
+    <h2>Student Attempts</h2>
+    <table>
+      <tr>
+        <th colspan="2" style="text-align: center;">Student Score</th>
+        <th style="width: 40px;"></th> <!-- Empty header for spacing -->
+        <th style="text-align: center;">Attempt Date</th>
+      </tr>
+      {% for attempt in student_attempts %}
+        <tr>
+          <td style="text-align: center;">{{ attempt.student.username }}</td>
+          <td style="text-align: center;">{{ attempt.score }}/{{ quiz.questions.count }}</td>
+          <td></td> <!-- Empty cell for spacing -->
+          <td style="text-align: center;">{{ attempt.date_attempted|date:"M d, Y H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4">No attempts yet.</td>
+        </tr>
+      {% endfor %}
+    </table>
+    <a href="{% url 'quizzes:quiz_list' %}">Back to Quizzes</a>
+  {% else %}
+    <!-- Display for Students: Quiz Questions -->
+    {% if not attempt %}
+      <form method="post">
+        {% csrf_token %}
+        {% for question in quiz.questions.all %}
+          <div class="question">
+            <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+            {% for choice in question.choices.all %}
+              <label>
+                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}">
+                {{ choice.text }}
+              </label><br>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <input type="submit" value="Submit Quiz">
+      </form>
+    {% else %}
+      <!-- Display Quiz Results -->
+      <p>Your score: {{ attempt.score }}/{{ quiz.questions.count }}</p>
+      <ul>
+        {% for question in quiz.questions.all %}
+          <li>
+            <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+            Your answer: {{ attempt|get_student_choice:question }}<br>
+            Correct answer: {{ question.get_correct_choice }}
+          </li>
+        {% endfor %}
+      </ul>
+      <a href="{% url 'quizzes:quiz_list' %}">Back to Quizzes</a>
+    {% endif %}
+  {% endif %}
+{% endblock %}
